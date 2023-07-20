@@ -62,4 +62,10 @@ app.post("/post", (req, res) => {
   });
 });
 
+app.post("/events", (req, res) => {
+  console.log("Event received:", req.body.type);
+
+  res.status(200).send("OK");
+});
+
 app.listen(port, () => console.log(`App listening on port ${port} 🔥🚀🔥!`));
