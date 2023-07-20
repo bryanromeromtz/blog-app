@@ -9,8 +9,6 @@ const port = 3005 || process.env.PORT;
 app.use(bodyParser.json());
 app.use(cors());
 
-const events = "./events.json";
-
 app.post("/events", async (req, res) => {
   const event = req.body;
   await axios.post("http://localhost:3001/events", event);

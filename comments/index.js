@@ -5,12 +5,17 @@ const bodyParser = require("body-parser");
 const port = 3001 || process.env.PORT;
 const { randomBytes } = require("crypto");
 const cors = require("cors");
+const axios = require("axios");
 
 const commentsDB = "./commentsDB.json";
 
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
+
+const postEvent = async (type, data) => {
+  await axios.post("http://localhost:3005/events", { type, data });
+};
 
 app.post("/post/:postId/comments", (req, res) => {
   fs.readFile(commentsDB, (err, data) => {
@@ -28,6 +33,8 @@ app.post("/post/:postId/comments", (req, res) => {
     const commentsData = commentsByPostId[postId] || [];
     commentsData.push({ id, content });
     commentsByPostId[postId] = commentsData;
+
+    postEvent("CommentCreated", { id, content, postId });
 
     fs.writeFile(commentsDB, JSON.stringify(commentsByPostId), (err) => {
       if (err) {
@@ -62,4 +69,6 @@ app.post("/events", (req, res) => {
   res.send({});
 });
 
-app.listen(port, () => console.log(`App listening on port ${port} 🔥🚀🔥!`));
+app.listen(port, () =>
+  console.log(`Comments App listening on port ${port} 🔥🚀🔥!`)
+);

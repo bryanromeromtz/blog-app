@@ -1,0 +1,24 @@
+{
+  "0547d71d": {
+    "id": "0547d71d",
+    "title": "Sekios 9000",
+    "comments": [
+      { "id": "366b84b4", "content": "My content by comment" },
+      { "id": "e0e7e6f3", "content": "My content by comment" }
+    ]
+  },
+  "c192d659": {
+    "id": "c192d659",
+    "title": "Sekios 9000",
+    "comments": [
+      { "id": "dfd7d045", "content": "My content by comment" },
+      { "id": "ded8398d", "content": "My content by comment" },
+      { "id": "79c53e00", "content": "clark kent" }
+    ]
+  },
+  "cc7d5165": {
+    "id": "cc7d5165",
+    "title": "New Post",
+    "comments": [{ "id": "436c397e", "content": "test for new post" }]
+  }
+}
