@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const app = express();
 const bodyParser = require("body-parser");
-const port = 3000 || process.env.PORT;
+const port = 3002 || process.env.PORT;
 const { randomBytes } = require("crypto");
 const cors = require("cors");
 

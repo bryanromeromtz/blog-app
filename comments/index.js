@@ -4,11 +4,13 @@ const app = express();
 const bodyParser = require("body-parser");
 const port = 3001 || process.env.PORT;
 const { randomBytes } = require("crypto");
+const cors = require("cors");
 
 const commentsDB = "./commentsDB.json";
 
 app.use(express.json());
 app.use(bodyParser.json());
+app.use(cors());
 
 app.post("/post/:postId/comments", (req, res) => {
   fs.readFile(commentsDB, (err, data) => {
