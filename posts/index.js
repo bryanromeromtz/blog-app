@@ -4,10 +4,12 @@ const app = express();
 const bodyParser = require("body-parser");
 const port = 3000 || process.env.PORT;
 const { randomBytes } = require("crypto");
+const cors = require("cors");
 
 const postsFile = "./posts.json";
 
 app.use(express.json());
+app.use(cors());
 app.use(bodyParser.json());
 
 app.get("/post", (req, res) => {
