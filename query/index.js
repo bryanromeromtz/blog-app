@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const axios = require("axios");
 const cors = require("cors");
 const fs = require("fs");
 
@@ -21,9 +20,8 @@ app.get("/posts", async (req, res) => {
     }
 
     const eventsData = JSON.parse(info.toString());
-    console.log("Eventos actuales:", eventsData);
     const posts = Object.values(eventsData).map((post) => {
-      return { id: post.id, title: post.title };
+      return { id: post.id, title: post.title, comments: post?.comments };
     });
 
     res.status(200).send(posts);

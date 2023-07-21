@@ -28,7 +28,7 @@ export const PostList = () => {
             <h3>{post.title}</h3>
 
             <div className="comments">
-              <CommentList postId={post.id} />
+              <CommentList comments={post.comments} />
               <CommentCreate postId={post.id} />
             </div>
           </div>
