@@ -8,7 +8,28 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.post("/events", (req, res) => {});
+app.post("/events", async (req, res) => {
+  const { type, data } = req.body;
+
+  if (type === "CommnetCreated") {
+    const status = data.content.includes("orange") ? "rejected" : "approved";
+
+    let event = {
+      type: "CommentModerated",
+      data: {
+        id: data.id,
+        postId: data.postId,
+        status,
+        content: data.content,
+      },
+    };
+    await axios.post("http://localhost:4002/events", {
+      event,
+    });
+
+    res.status(200).send({ status: "OK", event });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Moderation Service listening on port ${port} 🔥🚀🔥!`);

@@ -46,10 +46,26 @@ app.post("/events", async (req, res) => {
     }
 
     if (type === "CommentCreated") {
-      const { id, content, postId } = data;
+      const { id, content, postId, status } = data;
       const post = eventsData[postId];
       if (post) {
-        post.comments.push({ id, content });
+        post.comments.push({ id, content, status });
+      } else {
+        console.error("El post con el id", postId, "no existe");
+      }
+    }
+
+    if (type === "CommentUpdated") {
+      const { id, content, postId, status } = data;
+      const post = eventsData[postId];
+      if (post) {
+        const comment = post.comments.find((comment) => comment.id === id);
+        if (comment) {
+          comment.status = status;
+          comment.content = content;
+        } else {
+          console.error("El comentario con el id", id, "no existe");
+        }
       } else {
         console.error("El post con el id", postId, "no existe");
       }
