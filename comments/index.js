@@ -1,102 +1,70 @@
 const express = require("express");
-const fs = require("fs");
-const app = express();
 const bodyParser = require("body-parser");
-const port = 4001 || process.env.PORT;
 const { randomBytes } = require("crypto");
 const cors = require("cors");
 const axios = require("axios");
 
-const commentsDB = "./commentsDB.json";
-
-app.use(express.json());
+const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const postEvent = async (type, data) => {
-  await axios.post("http://localhost:4002/events", { type, data });
-};
+const commentsByPostId = {};
 
-app.post("/post/:postId/comments", (req, res) => {
-  fs.readFile(commentsDB, (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error saving comment");
-      return;
-    }
-
-    const commentsByPostId = JSON.parse(data.toString());
-
-    const id = randomBytes(4).toString("hex");
-    const { content } = req.body;
-    const { postId } = req.params;
-    const commentsData = commentsByPostId[postId] || [];
-    commentsData.push({ id, content, status: "pending" });
-    commentsByPostId[postId] = commentsData;
-
-    postEvent("CommentCreated", { id, content, postId, status: "pending" });
-
-    fs.writeFile(commentsDB, JSON.stringify(commentsByPostId), (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error saving comment");
-        return;
-      }
-
-      res.status(201).send("Comentario guardado correctamente");
-    });
-  });
+app.get("/posts/:id/comments", (req, res) => {
+  res.send(commentsByPostId[req.params.id] || []);
 });
 
-app.get("/post/:id/comments", (req, res) => {
-  fs.readFile(commentsDB, (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error al leer los comentarios");
-      return;
-    }
+app.post("/posts/:id/comments", async (req, res) => {
+  const commentId = randomBytes(4).toString("hex");
+  const { content } = req.body;
 
-    const commentsByPostId = JSON.parse(data.toString());
-    const { id } = req.params;
-    const comments = commentsByPostId[id] || [];
+  const comments = commentsByPostId[req.params.id] || [];
 
-    res.status(200).send(comments);
+  comments.push({ id: commentId, content, status: "pending" });
+
+  commentsByPostId[req.params.id] = comments;
+
+  await axios.post("http://localhost:4005/events", {
+    type: "CommentCreated",
+    data: {
+      id: commentId,
+      content,
+      postId: req.params.id,
+      status: "pending",
+    },
   });
+
+  res.status(201).send(comments);
 });
 
-app.post("/events", (req, res) => {
-  console.log("Event received:", req.body.type);
+app.post("/events", async (req, res) => {
+  console.log("Event Received:", req.body.type);
+
   const { type, data } = req.body;
 
   if (type === "CommentModerated") {
-    const { id, postId, status, content } = data;
-    fs.readFile(commentsDB, (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error al leer los comentarios");
-        return;
-      }
+    const { postId, id, status, content } = data;
+    const comments = commentsByPostId[postId];
 
-      const commentsByPostId = JSON.parse(data.toString());
-      const comments = commentsByPostId[postId] || [];
-      const comment = comments.find((comment) => comment.id === id);
-      comment.status = status;
+    const comment = comments.find((comment) => {
+      return comment.id === id;
+    });
+    comment.status = status;
 
-      postEvent("CommentUpdated", { id, postId, status, content });
-
-      fs.writeFile(commentsDB, JSON.stringify(commentsByPostId), (err) => {
-        if (err) {
-          console.error(err);
-          res.status(500).send("Error al guardar los comentarios");
-          return;
-        }
-
-        res.status(200).send("Comentario guardado correctamente");
-      });
+    await axios.post("http://localhost:4005/events", {
+      type: "CommentUpdated",
+      data: {
+        id,
+        status,
+        postId,
+        content,
+      },
     });
   }
+
+  res.send({});
 });
 
-app.listen(port, () =>
-  console.log(`Comments App listening on port ${port} 🔥🚀🔥!`)
-);
+app.listen(4001, () => {
+  console.log("Listening on 4001");
+});

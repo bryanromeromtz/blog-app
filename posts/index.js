@@ -1,79 +1,45 @@
 const express = require("express");
-const fs = require("fs");
-const app = express();
 const bodyParser = require("body-parser");
-const port = 4000 || process.env.PORT;
 const { randomBytes } = require("crypto");
 const cors = require("cors");
 const axios = require("axios");
 
-const postsFile = "./posts.json";
-
-app.use(express.json());
-app.use(cors());
+const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
-const postEvent = async (type, data) => {
-  await axios.post("http://localhost:3005/events", { type, data });
-};
+const posts = {};
 
-app.get("/post", (req, res) => {
-  fs.readFile(postsFile, (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error al leer los posts");
-      return;
-    }
-
-    let posts = [];
-    if (data.length > 0) {
-      posts = JSON.parse(data);
-    }
-
-    res.status(200).send(posts);
-  });
+app.get("/posts", (req, res) => {
+  res.send(posts);
 });
 
-app.post("/post", async (req, res) => {
+app.post("/posts", async (req, res) => {
   const id = randomBytes(4).toString("hex");
   const { title } = req.body;
-  const newPost = {};
-  newPost.id = id;
-  newPost.title = title;
 
-  postEvent("PostCreated", newPost);
+  posts[id] = {
+    id,
+    title,
+  };
 
-  fs.readFile(postsFile, (err, data) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error al leer los posts");
-      return;
-    }
-
-    let posts = [];
-    if (data.length > 0) {
-      posts = JSON.parse(data);
-    }
-
-    posts.push(newPost);
-
-    fs.writeFile(postsFile, JSON.stringify(posts), (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error al guardar el post");
-        return;
-      }
-
-      res.status(201).send("Post guardado correctamente");
-    });
+  await axios.post("http://localhost:4005/events", {
+    type: "PostCreated",
+    data: {
+      id,
+      title,
+    },
   });
+
+  res.status(201).send(posts[id]);
 });
 
 app.post("/events", (req, res) => {
-  console.log("Event received:", req.body.type);
+  console.log("Received Event", req.body.type);
+
   res.send({});
 });
 
-app.listen(port, () =>
-  console.log(`Post App listening on port ${port} 🔥🚀🔥!`)
-);
+app.listen(4000, () => {
+  console.log("Listening on 4000");
+});
