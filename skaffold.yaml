@@ -1,20 +1,59 @@
-apiVersion: skaffold/v2beta21
+apiVersion: skaffold/v4beta3
 kind: Config
+manifests:
+  rawYaml:
+    - ./infrastructure/k8s/* # Ruta a tus archivos YAML de Kubernetes
 build:
   local:
     push: false # Cambia a true si quieres hacer push de las imágenes a un registro
   artifacts:
-    - image: modeselektor333/client # Cambia a la ruta de tus imágenes
-      context: ./client # Ruta al directorio del código fuente del cliente
+    - image: modeselektor333/client
+      context: client
       docker:
-        dockerfile: Dockerfile # Cambia al nombre de tu Dockerfile de desarrollo
+        dockerfile: Dockerfile
       sync:
         manual:
-          - dest: .
-            src: "src/**/*.js"
+          - src: "src/**/*.js"
+            dest: .
+    - image: modeselektor333/comments
+      context: comments
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
+    - image: modeselektor333/event-bus
+      context: event-bus
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
+    - image: modeselektor333/moderation
+      context: moderation
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
+    - image: modeselektor333/posts
+      context: posts
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
+    - image: modeselektor333/query
+      context: query
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "*.js"
+            dest: .
   tagPolicy:
     sha256: {}
-deploy:
-  kubectl:
-    manifests:
-      - ./infrastructure/k8s/* # Ruta a tus archivos YAML de Kubernetes
