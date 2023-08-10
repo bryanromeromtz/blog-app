@@ -1,0 +1,20 @@
+apiVersion: skaffold/v2beta21
+kind: Config
+build:
+  local:
+    push: false # Cambia a true si quieres hacer push de las imágenes a un registro
+  artifacts:
+    - image: modeselektor333/client # Cambia a la ruta de tus imágenes
+      context: ./client # Ruta al directorio del código fuente del cliente
+      docker:
+        dockerfile: Dockerfile # Cambia al nombre de tu Dockerfile de desarrollo
+      sync:
+        manual:
+          - dest: .
+            src: "src/**/*.js"
+  tagPolicy:
+    sha256: {}
+deploy:
+  kubectl:
+    manifests:
+      - ./infrastructure/k8s/* # Ruta a tus archivos YAML de Kubernetes
